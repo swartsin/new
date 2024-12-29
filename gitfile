@@ -1,0 +1,26 @@
+<configuration>
+    <system.web>
+        <authentication mode="Forms">
+            <forms loginUrl="login.aspx" defaultUrl="default.aspx" />
+        </authentication>
+        <authorization>
+            <deny users="?" />
+            <allow users="*" />
+        </authorization>
+    </system.web>
+    
+    <system.webServer>
+        <rewrite>
+            <rules>
+                <rule name="Redirect to HTTPS">
+                    <match url="(.*)" />
+                    <conditions>
+                        <add input="{HTTPS}" pattern="off" />
+                    </conditions>
+                    <action type="Redirect" url="https://{HTTP_HOST}/{R:1}" />
+                </rule>
+            </rules>
+        </rewrite>
+    </system.webServer>
+</configuration>
+
