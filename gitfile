@@ -1,26 +1,54 @@
-<configuration>
-    <system.web>
-        <authentication mode="Forms">
-            <forms loginUrl="login.aspx" defaultUrl="default.aspx" />
-        </authentication>
-        <authorization>
-            <deny users="?" />
-            <allow users="*" />
-        </authorization>
-    </system.web>
-    
-    <system.webServer>
-        <rewrite>
-            <rules>
-                <rule name="Redirect to HTTPS">
-                    <match url="(.*)" />
-                    <conditions>
-                        <add input="{HTTPS}" pattern="off" />
-                    </conditions>
-                    <action type="Redirect" url="https://{HTTP_HOST}/{R:1}" />
-                </rule>
-            </rules>
-        </rewrite>
-    </system.webServer>
-</configuration>
+# Global Settings
+user nginx;
+worker_processes auto;
+pid /var/run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
 
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    # Logging Settings
+    access_log  /var/log/nginx/access.log;
+    error_log   /var/log/nginx/error.log;
+
+    # Performance Tweaks
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+
+    # Server Block for Your Website
+    server {
+        listen 80;
+        server_name example.com www.example.com;  # Replace with your domain or IP
+
+        # Root Directory of Your Website Files
+        root /var/www/html;
+        index index.html index.htm;
+
+        # Location for Serving Static Files (HTML, CSS, JS)
+        location / {
+            try_files $uri $uri/ =404;  # Serve files or show 404 if not found
+        }
+
+        # Error Page Handling
+        error_page 404 /404.html;
+        location = /404.html {
+            root /var/www/html;
+        }
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+            root /var/www/html;
+        }
+    }
+}
